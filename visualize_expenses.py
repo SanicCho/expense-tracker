@@ -24,10 +24,26 @@ def load_totals(path):
     return sorted(totals.items(), key=lambda item: (-item[1], item[0])), skipped
 
 
+def draw_chart(data):
+    import matplotlib.pyplot as plt
+    from matplotlib import font_manager
+
+    fonts = ["Microsoft JhengHei", "PingFang TC", "Noto Sans CJK TC", "Noto Sans CJK JP"]
+    available = font_manager.get_font_names()
+    plt.rcParams["font.family"] = [f for f in fonts if f in available] + ["DejaVu Sans"]
+    labels = [category for category, _ in data]
+    amounts = [float(value) for _, value in data]
+    fig, ax = plt.subplots()
+    ax.pie(amounts, labels=labels, autopct="%.1f%%", startangle=90)
+    ax.set_title("支出類別分布")
+    return fig
+
+
 def main():
     import argparse
+    import matplotlib.pyplot as plt
 
-    parser = argparse.ArgumentParser(description="依類別統計支出")
+    parser = argparse.ArgumentParser(description="依支出類別繪製圓餅圖")
     parser.add_argument("--csv", default="expenses.csv", help="資料檔路徑")
     args = parser.parse_args()
     try:
@@ -37,10 +53,10 @@ def main():
         if not data:
             print("目前沒有有效支出，請先執行 input_expenses.py 新增資料。")
             return
-        for category, amount in data:
-            print(f"{category}：{amount:,.2f}")
+        draw_chart(data)
+        plt.show()
     except (OSError, ValueError, csv.Error) as error:
-        parser.exit(1, f"無法讀取支出：{error}\n")
+        parser.exit(1, f"無法產生圖表：{error}\n")
 
 
 if __name__ == "__main__":
